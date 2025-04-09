@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Infinite 60 FPS Timer with Blue Numbers</title>
+    <style>
+        body { 
+            font-family: 'Arial', sans-serif;
+            text-align: center; 
+            margin-top: 30px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+        #timer {
+            font-size: 2.5em;
+            margin: 15px 0;
+            font-weight: bold;
+            min-height: 1em;
+            color: #2196F3;
+        }
+        .controls {
+            margin: 20px 0;
+        }
+        button {
+            padding: 8px 16px;
+            font-size: 0.9em;
+            margin: 0 6px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        #startBtn { background: #4CAF50; color: white; }
+        #stopBtn { background: #f44336; color: white; }
+        #resetBtn { background: #2196F3; color: white; }
+        button:hover { opacity: 0.9; transform: scale(1.05); }
+        button:disabled { opacity: 0.6; transform: none; }
+        .font-selector {
+            margin: 15px 0;
+        }
+        select {
+            padding: 6px 12px;
+            font-size: 0.9em;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        /* Font Classes */
+        .digital { font-family: 'Courier New', monospace; }
+        .modern { font-family: 'Montserrat', sans-serif; }
+        .retro { font-family: 'Press Start 2P', cursive; font-size: 1.8em; }
+        .elegant { font-family: 'Times New Roman', serif; }
+        .futuristic { font-family: 'Orbitron', sans-serif; }
+        .handwritten { font-family: 'Dancing Script', cursive; }
+        .tech { font-family: 'Share Tech Mono', monospace; }
+        .rounded { font-family: 'Varela Round', sans-serif; }
+        .playful { font-family: 'Comic Neue', cursive; }
+        .serif { font-family: 'Baskerville', serif; }
+        .condensed { font-family: 'Oswald', sans-serif; }
+        .space { font-family: 'Space Mono', monospace; }
+        .groovy { font-family: 'Pacifico', cursive; }
+        .minimal { font-family: 'Raleway', sans-serif; }
+    </style>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1 style="font-size: 1.5em;">Infinite 60 FPS Timer</h1>
+        <div class="font-selector">
+            <select id="fontSelector">
+                <option value="digital">Digital (Courier New)</option>
+                <option value="modern" selected>Modern (Montserrat)</option>
+                <option value="retro">Retro (Press Start 2P)</option>
+                <option value="elegant">Elegant (Times New Roman)</option>
+                <option value="futuristic">Futuristic (Orbitron)</option>
+                <option value="handwritten">Handwritten (Dancing Script)</option>
+                <option value="tech">Tech (Share Tech Mono)</option>
+                <option value="rounded">Rounded (Varela Round)</option>
+                <option value="playful">Playful (Comic Neue)</option>
+                <option value="serif">Classic Serif (Baskerville)</option>
+                <option value="condensed">Condensed (Oswald)</option>
+                <option value="space">Space (Space Mono)</option>
+                <option value="groovy">Groovy (Pacifico)</option>
+                <option value="minimal">Minimal (Raleway)</option>
+            </select>
+        </div>
+        
+        <div id="timer" class="modern">00:00:000</div>
+        
+        <div class="controls">
+            <button id="startBtn">Start</button>
+            <button id="stopBtn" disabled>Stop</button>
+            <button id="resetBtn">Reset</button>
+        </div>
+    </div>
+
+    <script>
+        // Timer variables
+        let startTime, lastFrameTime = 0;
+        let animationId = null;
+        let currentFrame = 0;
+        let currentBlock = 0;
+        
+        // DOM elements
+        const timerDisplay = document.getElementById('timer');
+        const fontSelector = document.getElementById('fontSelector');
+        
+        // Frame pattern (offsets within each 100ms block)
+        const framePattern = [17, 33, 50, 67, 83, 100];
+
+        function formatTime(ms) {
+            const minutes = Math.floor(ms / 60000).toString().padStart(2, '0');
+            const seconds = Math.floor((ms % 60000) / 1000).toString().padStart(2, '0');
+            const milliseconds = (ms % 1000).toString().padStart(3, '0');
+            return `${minutes}:${seconds}:${milliseconds}`;
+        }
+
+        function updateTimer() {
+            const now = Date.now();
+            const elapsed = now - lastFrameTime;
+            
+            // Calculate target time for current frame
+            const frameTarget = currentBlock * 100 + framePattern[currentFrame];
+            const frameDuration = currentFrame === 0 ? 17 : (framePattern[currentFrame] - framePattern[currentFrame-1]);
+            
+            if (elapsed >= frameDuration) {
+                // Update display
+                timerDisplay.textContent = formatTime(frameTarget);
+                
+                // Move to next frame
+                lastFrameTime = now - (elapsed - frameDuration);
+                currentFrame = (currentFrame + 1) % framePattern.length;
+                
+                // Move to next 100ms block when pattern completes
+                if (currentFrame === 0) {
+                    currentBlock++;
+                }
+            }
+            
+            animationId = requestAnimationFrame(updateTimer);
+        }
+
+        // Event listeners
+        document.getElementById('startBtn').addEventListener('click', () => {
+            if (!animationId) {
+                startTime = Date.now();
+                lastFrameTime = Date.now();
+                currentFrame = 0;
+                currentBlock = 0;
+                updateTimer();
+                document.getElementById('startBtn').disabled = true;
+                document.getElementById('stopBtn').disabled = false;
+            }
+        });
+
+        document.getElementById('stopBtn').addEventListener('click', () => {
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+                document.getElementById('startBtn').disabled = false;
+                document.getElementById('stopBtn').disabled = true;
+            }
+        });
+
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+            currentFrame = 0;
+            currentBlock = 0;
+            timerDisplay.textContent = formatTime(0);
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('stopBtn').disabled = true;
+        });
+
+        // Font selector functionality
+        fontSelector.addEventListener('change', (e) => {
+            // Remove all font classes
+            timerDisplay.className = '';
+            // Add selected font class
+            timerDisplay.classList.add(e.target.value);
+            
+            // Special size adjustments
+            if (e.target.value === 'retro') {
+                timerDisplay.style.fontSize = '1.8em';
+            } 
+            else if (e.target.value === 'handwritten' || e.target.value === 'groovy') {
+                timerDisplay.style.fontSize = '2.2em';
+            }
+            else {
+                timerDisplay.style.fontSize = '2.5em';
+            }
+        });
+    </script>
+</body>
+</html>
