@@ -1,215 +1,198 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
-    <title>Infinite 60 FPS Timer with Blue Numbers</title>
-    <style>
-        body { 
-            font-family: 'Arial', sans-serif;
-            text-align: center; 
-            margin-top: 30px;
-            background: #f5f5f5;
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.1);
-        }
-        #timer {
-            font-size: 2.5em;
-            margin: 15px 0;
-            font-weight: bold;
-            min-height: 1em;
-            color: #2196F3;
-        }
-        .controls {
-            margin: 20px 0;
-        }
-        button {
-            padding: 8px 16px;
-            font-size: 0.9em;
-            margin: 0 6px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        #startBtn { background: #4CAF50; color: white; }
-        #stopBtn { background: #f44336; color: white; }
-        #resetBtn { background: #2196F3; color: white; }
-        button:hover { opacity: 0.9; transform: scale(1.05); }
-        button:disabled { opacity: 0.6; transform: none; }
-        .font-selector {
-            margin: 15px 0;
-        }
-        select {
-            padding: 6px 12px;
-            font-size: 0.9em;
-            border-radius: 5px;
-            border: 1px solid #ddd;
-            width: 100%;
-            max-width: 300px;
-        }
+  <meta charset="UTF-8">
+  <title>Speedrun - Super Mario World</title>
+  <style>
+    body {
+      background-color: #0e0e0e;
+      color: #ffffff;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
 
-        /* Font Classes */
-        .digital { font-family: 'Courier New', monospace; }
-        .modern { font-family: 'Montserrat', sans-serif; }
-        .retro { font-family: 'Press Start 2P', cursive; font-size: 1.8em; }
-        .elegant { font-family: 'Times New Roman', serif; }
-        .futuristic { font-family: 'Orbitron', sans-serif; }
-        .handwritten { font-family: 'Dancing Script', cursive; }
-        .tech { font-family: 'Share Tech Mono', monospace; }
-        .rounded { font-family: 'Varela Round', sans-serif; }
-        .playful { font-family: 'Comic Neue', cursive; }
-        .serif { font-family: 'Baskerville', serif; }
-        .condensed { font-family: 'Oswald', sans-serif; }
-        .space { font-family: 'Space Mono', monospace; }
-        .groovy { font-family: 'Pacifico', cursive; }
-        .minimal { font-family: 'Raleway', sans-serif; }
-    </style>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Press+Start+2P&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400&display=swap" rel="stylesheet">
+    h1 {
+      text-align: center;
+      color: #00bfff;
+    }
+
+    .tabs, .subtabs {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .tab, .subtab {
+      background-color: #1e1e1e;
+      border: 1px solid #00bfff;
+      color: #00bfff;
+      padding: 10px 15px;
+      cursor: pointer;
+      border-radius: 5px;
+      transition: 0.3s;
+    }
+
+    .tab:hover, .subtab:hover {
+      background-color: #00bfff;
+      color: #0e0e0e;
+    }
+
+    .tab.active, .subtab.active {
+      background-color: #00bfff;
+      color: #0e0e0e;
+    }
+
+    .leaderboard, .subleaderboard {
+      display: none;
+    }
+
+    .leaderboard.active, .subleaderboard.active {
+      display: block;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #444;
+      text-align: left;
+    }
+
+    th {
+      background-color: #222;
+      color: #00bfff;
+    }
+
+    tr:hover {
+      background-color: #333;
+    }
+
+    td.flag {
+      font-size: 1.2em;
+    }
+
+    a {
+      color: #00bfff;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1 style="font-size: 1.5em;">Infinite 60 FPS Timer</h1>
-        <div class="font-selector">
-            <select id="fontSelector">
-                <option value="digital">Digital (Courier New)</option>
-                <option value="modern" selected>Modern (Montserrat)</option>
-                <option value="retro">Retro (Press Start 2P)</option>
-                <option value="elegant">Elegant (Times New Roman)</option>
-                <option value="futuristic">Futuristic (Orbitron)</option>
-                <option value="handwritten">Handwritten (Dancing Script)</option>
-                <option value="tech">Tech (Share Tech Mono)</option>
-                <option value="rounded">Rounded (Varela Round)</option>
-                <option value="playful">Playful (Comic Neue)</option>
-                <option value="serif">Classic Serif (Baskerville)</option>
-                <option value="condensed">Condensed (Oswald)</option>
-                <option value="space">Space (Space Mono)</option>
-                <option value="groovy">Groovy (Pacifico)</option>
-                <option value="minimal">Minimal (Raleway)</option>
-            </select>
-        </div>
-        
-        <div id="timer" class="modern">00:00:000</div>
-        
-        <div class="controls">
-            <button id="startBtn">Start</button>
-            <button id="stopBtn" disabled>Stop</button>
-            <button id="resetBtn">Reset</button>
-        </div>
+  <h1>Smw Speedrun mobile</h1>
+
+  <div class="tabs">
+    <div class="tab active" onclick="showTab('11exit')">11 Exit</div>
+    <div class="tab" onclick="showTab('96exit')">96 Exit</div>
+    <div class="tab" onclick="showTab('allcastles')">All Castles</div>
+    <div class="tab" onclick="showTab('nostar')">No Starworld</div>
+    <div class="tab" onclick="showTab('0exit')">0 Exit</div>
+    <div class="tab" onclick="showTab('95nocape')">95 Exit, No Cape</div>
+    <div class="tab" onclick="showTab('allnocape')">All Castles, No Cape</div>
+    <div class="tab" onclick="showTab('nocape_nostar')">No Cape, No Starworld</div>
+    <div class="tab" onclick="showTab('11nocape')">11 Exit, No Cape</div>
+    <div class="tab" onclick="showTab('allsmall')">All Castles, Small Only</div>
+    <div class="tab" onclick="showTab('nostar_small')">No Starworld, Small Only</div>
+    <div class="tab" onclick="showTab('smallonly')">Small Only</div>
+    <div class="tab" onclick="showTab('lunar')">Lunar Dragon</div>
+  </div>
+
+  <!-- 11 Exit com subcategorias -->
+  <div class="leaderboard active" id="11exit">
+    <div class="subtabs">
+      <div class="subtab active" onclick="showSubtab('glitchless')">Glitchless</div>
+      <div class="subtab" onclick="showSubtab('cloud')">Cloud</div>
+      <div class="subtab" onclick="showSubtab('orb')">Orb</div>
     </div>
 
-    <script>
-        // Timer variables
-        let startTime, lastFrameTime = 0;
-        let animationId = null;
-        let currentFrame = 0;
-        let currentBlock = 0;
-        
-        // DOM elements
-        const timerDisplay = document.getElementById('timer');
-        const fontSelector = document.getElementById('fontSelector');
-        
-        // Frame pattern (offsets within each 100ms block)
-        const framePattern = [17, 33, 50, 67, 83, 100];
+    <div class="subleaderboard active" id="glitchless">
+      <table>
+        <thead>
+          <tr><th>#</th><th>Runner</th><th>Time</th><th>Country</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td><a href="https://youtu.be/b_AN7O_TSDM" target="_blank">Eduardoelxdd</a></td><td>11:47.880</td><td class="flag">🇲🇽 México</td></tr>
+          <tr><td>2</td><td><a href="https://youtu.be/A6AbXYvB-Qc?si=WtANEBdYeBkdeG2k" target="_blank">Zackajin</a></td><td>11:58.766</td><td class="flag">🇧🇷 Brasil</td></tr>
+          <tr><td>3</td><td><a href="https://youtu.be/LQsuq3Y8Wfw?si=sxUqhTpTaHRVbkLq" target="_blank">Guizzx1n</a></td><td>12:37.120</td><td class="flag">🇧🇷 Brasil</td></tr>
+          <tr><td>4</td><td>Orubista</td><td>13:08.240</td><td class="flag">🇧🇷 Brasil</td></tr>
+          <tr><td>5</td><td><a href="https://youtu.be/_BKk4_IY3Cs?si=-wXD9-tP4T2vvcgQ" target="_blank">Zash_</a></td><td>13:20.300</td><td class="flag">🇧🇷 Brasil</td></tr>
+          <tr><td>6</td><td><a href="https://youtu.be/iyAy-ZDIfic?si=bcUpg-mnIPVeIAB6" target="_blank">Foquinha69</a></td><td>13:45.667</td><td class="flag">🇧🇷 Brasil</td></tr>
+          <tr><td>7</td><td><a href="https://youtu.be/JIEjCxsquHw?si=avfAIwwvccY9GX0v" target="_blank">JunyorKK</a></td><td>13:57.000</td><td class="flag">🇧🇷 Brasil</td></tr>
+          <tr><td>8</td><td><a href="https://youtu.be/8tVxK4J_yrU" target="_blank">JP Morais Alves</a></td><td>14:30.233</td><td class="flag">🇧🇷 Brasil</td></tr>
+          <tr><td>9</td><td><a href="https://youtu.be/QT7C67DiytM?si=Cq_cSlLPgYJ1-r20" target="_blank">nerddevideogames</a></td><td>14:53.367</td><td class="flag">🇧🇷 Brasil</td></tr>
+          <tr><td>10</td><td><a href="https://www.youtube.com/live/TPBuoeyDqbc" target="_blank">vivico29</a></td><td>16:36.309</td><td class="flag">🇧🇷 Brasil</td></tr>
+        </tbody>
+      </table>
+    </div>
 
-        function formatTime(ms) {
-            const minutes = Math.floor(ms / 60000).toString().padStart(2, '0');
-            const seconds = Math.floor((ms % 60000) / 1000).toString().padStart(2, '0');
-            const milliseconds = (ms % 1000).toString().padStart(3, '0');
-            return `${minutes}:${seconds}:${milliseconds}`;
-        }
+    <div class="subleaderboard" id="cloud">
+      <p>Subcategoria <strong>Cloud</strong> em breve.</p>
+    </div>
 
-        function updateTimer() {
-            const now = Date.now();
-            const elapsed = now - lastFrameTime;
-            
-            // Calculate target time for current frame
-            const frameTarget = currentBlock * 100 + framePattern[currentFrame];
-            const frameDuration = currentFrame === 0 ? 17 : (framePattern[currentFrame] - framePattern[currentFrame-1]);
-            
-            if (elapsed >= frameDuration) {
-                // Update display
-                timerDisplay.textContent = formatTime(frameTarget);
-                
-                // Move to next frame
-                lastFrameTime = now - (elapsed - frameDuration);
-                currentFrame = (currentFrame + 1) % framePattern.length;
-                
-                // Move to next 100ms block when pattern completes
-                if (currentFrame === 0) {
-                    currentBlock++;
-                }
-            }
-            
-            animationId = requestAnimationFrame(updateTimer);
-        }
+    <div class="subleaderboard" id="orb">
+      <p>Subcategoria <strong>Orb</strong> em breve.</p>
+    </div>
+  </div>
 
-        // Event listeners
-        document.getElementById('startBtn').addEventListener('click', () => {
-            if (!animationId) {
-                startTime = Date.now();
-                lastFrameTime = Date.now();
-                currentFrame = 0;
-                currentBlock = 0;
-                updateTimer();
-                document.getElementById('startBtn').disabled = true;
-                document.getElementById('stopBtn').disabled = false;
-            }
-        });
+  <!-- Outras categorias -->
+<div class="leaderboard" id="96exit">
+  <table>
+    <thead>
+      <tr><th>#</th><th>Runner</th><th>Time</th><th>Country</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td><a href="https://youtu.be/wF5Bax7G6cs?si=zTg-6X549N0-264g" target="_blank">Eduardoelxdd</a></td><td>2:21:09</td><td class="flag">🇲🇽 México</td></tr>
+    </tbody>
+  </table>
+</div>
+  
+  <div class="leaderboard" id="allcastles"><p>Leaderboard da categoria <strong>All Castles</strong> em breve.</p></div>
+  
+  <div class="leaderboard" id="nostar">
+    <table>
+      <thead>
+        <tr><th>#</th><th>Runner</th><th>Time</th><th>Country</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td><a href="https://youtu.be/zaW3MTdLacI?si=XVgp21LZI9LwHOsi" target="_blank">Zackajin</a></td><td>48:51</td><td class="flag">🇧🇷 Brasil</td></tr>
+      </tbody>
+    </table>
+  </div>
+  
+  <div class="leaderboard" id="0exit"><p>Leaderboard da categoria <strong>0 Exit</strong> em breve.</p></div>
+  <div class="leaderboard" id="95nocape"><p>Leaderboard da categoria <strong>95 Exit, No Cape</strong> em breve.</p></div>
+  <div class="leaderboard" id="allnocape"><p>Leaderboard da categoria <strong>All Castles, No Cape</strong> em breve.</p></div>
+  <div class="leaderboard" id="nocape_nostar"><p>Leaderboard da categoria <strong>No Cape, No Starworld</strong> em breve.</p></div>
+  <div class="leaderboard" id="11nocape"><p>Leaderboard da categoria <strong>11 Exit, No Cape</strong> em breve.</p></div>
+  <div class="leaderboard" id="allsmall"><p>Leaderboard da categoria <strong>All Castles, Small Only</strong> em breve.</p></div>
+  <div class="leaderboard" id="nostar_small"><p>Leaderboard da categoria <strong>No Starworld, Small Only</strong> em breve.</p></div>
+  <div class="leaderboard" id="smallonly"><p>Leaderboard da categoria <strong>Small Only</strong> em breve.</p></div>
+  <div class="leaderboard" id="lunar"><p>Leaderboard da categoria <strong>Lunar Dragon</strong> em breve.</p></div>
 
-        document.getElementById('stopBtn').addEventListener('click', () => {
-            if (animationId) {
-                cancelAnimationFrame(animationId);
-                animationId = null;
-                document.getElementById('startBtn').disabled = false;
-                document.getElementById('stopBtn').disabled = true;
-            }
-        });
+  <script>
+    function showTab(tabId) {
+      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.leaderboard').forEach(lb => lb.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      event.target.classList.add('active');
+    }
 
-        document.getElementById('resetBtn').addEventListener('click', () => {
-            if (animationId) {
-                cancelAnimationFrame(animationId);
-                animationId = null;
-            }
-            currentFrame = 0;
-            currentBlock = 0;
-            timerDisplay.textContent = formatTime(0);
-            document.getElementById('startBtn').disabled = false;
-            document.getElementById('stopBtn').disabled = true;
-        });
-
-        // Font selector functionality
-        fontSelector.addEventListener('change', (e) => {
-            // Remove all font classes
-            timerDisplay.className = '';
-            // Add selected font class
-            timerDisplay.classList.add(e.target.value);
-            
-            // Special size adjustments
-            if (e.target.value === 'retro') {
-                timerDisplay.style.fontSize = '1.8em';
-            } 
-            else if (e.target.value === 'handwritten' || e.target.value === 'groovy') {
-                timerDisplay.style.fontSize = '2.2em';
-            }
-            else {
-                timerDisplay.style.fontSize = '2.5em';
-            }
-        });
-    </script>
+    function showSubtab(subId) {
+      document.querySelectorAll('.subtab').forEach(sub => sub.classList.remove('active'));
+      document.querySelectorAll('.subleaderboard').forEach(sl => sl.classList.remove('active'));
+      document.getElementById(subId).classList.add('active');
+      event.target.classList.add('active');
+    }
+  </script>
 </body>
 </html>
